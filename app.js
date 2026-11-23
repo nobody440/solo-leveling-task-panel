@@ -289,11 +289,14 @@ $('#oath-dialog').addEventListener('cancel', (event) => {
 $('#oath-dialog').addEventListener('close', () => {
   document.body.classList.remove('oath-open');
 });
-$('#oath-form').addEventListener('submit', (event) => {
-  event.preventDefault();
-  if (!currentStepIsValid()) return;
+function completeOath() {
+  if (!currentStepIsValid()) {
+    showToast('Complete the first trial field before awakening.');
+    return;
+  }
+
   const isFirstOath = !state.oath;
-  const form = new FormData(event.currentTarget);
+  const form = new FormData($('#oath-form'));
   const vows = [1, 2, 3, 4, 5].map((number) => String(form.get(`vow${number}`) || '').trim());
   const oath = {
     name: String(form.get('hunterName') || '').trim().slice(0, 28),
@@ -303,13 +306,30 @@ $('#oath-form').addEventListener('submit', (event) => {
     trial: String(form.get('trial') || '').trim(),
     rank: 'E'
   };
+
   state.player = oath.name;
   state.oath = oath;
   state.quests = createOathQuests(oath);
-  saveState();
+
+  try {
+    saveState();
+  } catch (error) {
+    showToast('The System could not save your oath. Please try again.');
+    return;
+  }
+
   render();
   $('#oath-dialog').close();
   showToast(isFirstOath ? 'Hunter registration complete.' : 'Your oath has been inscribed.');
+}
+
+$('#oath-submit').addEventListener('click', (event) => {
+  event.preventDefault();
+  completeOath();
+});
+$('#oath-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  completeOath();
 });
 
 $('#settings-button').addEventListener('click', () => {
@@ -319,4 +339,3 @@ $('#settings-button').addEventListener('click', () => {
 
 render();
 if (!state.oath) openOathPanel();
-
