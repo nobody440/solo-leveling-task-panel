@@ -37,6 +37,7 @@ function loadState() {
       ...saved,
       quests: Array.isArray(saved.quests) ? saved.quests : initialQuests.map((quest) => ({ ...quest }))
     };
+    if (loaded.oath) loaded.oath = { ...loaded.oath, rank: 'E' };
     if (loaded.date !== today) {
       loaded.quests = loaded.quests.map((quest) => ({ ...quest, done: false }));
       loaded.date = today;
@@ -175,23 +176,20 @@ function populateOathForm() {
   document.querySelectorAll('input[name="discipline"]').forEach((input) => {
     input.checked = input.value === oath?.discipline;
   });
-  document.querySelectorAll('input[name="rank"]').forEach((input) => {
-    input.checked = input.value === oath?.rank;
-  });
 }
 
 function showOathStep(index) {
-  oathStep = Math.max(0, Math.min(5, index));
+  oathStep = Math.max(0, Math.min(4, index));
   document.querySelectorAll('.oath-step').forEach((step, stepIndex) => {
     const active = stepIndex === oathStep;
     step.hidden = !active;
     step.classList.toggle('is-active', active);
   });
-  $('#oath-step-label').textContent = `TRIAL ${String(oathStep + 1).padStart(2, '0')} / 06`;
-  $('#oath-progress-fill').style.width = `${((oathStep + 1) / 6) * 100}%`;
+  $('#oath-step-label').textContent = `TRIAL ${String(oathStep + 1).padStart(2, '0')} / 05`;
+  $('#oath-progress-fill').style.width = `${((oathStep + 1) / 5) * 100}%`;
   $('#oath-back').hidden = oathStep === 0;
-  $('#oath-next').hidden = oathStep === 5;
-  $('#oath-submit').hidden = oathStep !== 5;
+  $('#oath-next').hidden = oathStep === 4;
+  $('#oath-submit').hidden = oathStep !== 4;
   $('#oath-title').textContent = state.oath ? 'Alter thy oath.' : 'Awaken, Hunter.';
 }
 
@@ -303,7 +301,7 @@ $('#oath-form').addEventListener('submit', (event) => {
     vows,
     discipline: String(form.get('discipline') || 'Discipline'),
     trial: String(form.get('trial') || '').trim(),
-    rank: String(form.get('rank') || 'E')
+    rank: 'E'
   };
   state.player = oath.name;
   state.oath = oath;
@@ -322,4 +320,3 @@ $('#settings-button').addEventListener('click', () => {
 render();
 if (!state.oath) openOathPanel();
 
-  
